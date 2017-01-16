@@ -4,17 +4,27 @@
 #include <string>
 #include <vector>
 #include <time.h>
-#include <direct.h>
+#include <cstring>
+
+#ifdef WINDOWS
 #include <Windows.h>
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2\imgproc\imgproc.hpp>
+#include <direct.h>
+
+#else
+#include <dirent.h>
+
+#endif
+
+
+#include <core/core.hpp> 	//<opencv2/core/core.hpp>
+#include <highgui/highgui.hpp> 	//<opencv2/highgui/highgui.hpp>
+#include <imgproc/imgproc.hpp>	//<opencv2/imgproc/imgproc.hpp>
 
 #define patch_row 160
 #define patch_col 96
-#define crop_per_image 100
-#define negative_image_dir "D:\\Study/Data/INRIA_Pedestrian/Train/neg/"
-#define save_dir "D:\\Study/Data/INRIA_Pedestrian/train_64x128_H96/neg/"
+#define crop_per_image 3 //100
+#define negative_image_dir "/home/cemysf/datasets/INRIAPerson/Train/neg"		
+#define save_dir "./negatives"	//"/home/cemysf/datasets/INRIAPerson/train_64x128_H96/neg"		
 
 using namespace std;
 using namespace cv;
@@ -23,6 +33,7 @@ using namespace cv;
 vector<string> get_all_files_names_within_folder(string folder)
 {
 	vector<string> names;
+#ifdef WINDOWS
 	char search_path[1000];
 	sprintf_s(search_path, 1000, "%s*.*", folder.c_str());
 	WIN32_FIND_DATA fd;
@@ -37,6 +48,21 @@ vector<string> get_all_files_names_within_folder(string folder)
 		} while (::FindNextFile(hFind, &fd));
 		::FindClose(hFind);
 	}
+#else
+	DIR *dpdf;
+	struct dirent *epdf;
+	dpdf = opendir(folder.c_str());
+	if (dpdf != NULL){
+		while (epdf = readdir(dpdf)){
+			if(strncmp(epdf->d_name, ".", 1)!=0 && strncmp(epdf->d_name, "..", 2)!=0){
+				string filename = "/" ;
+				filename += epdf->d_name;
+				names.push_back(filename);
+			}
+			//cout << epdf->d_name << endl;
+		}
+	}
+#endif
 	return names;
 }
 
@@ -54,14 +80,18 @@ int main()
 	
 
 	ss << save_dir;
+//	cout << "ss:" << ss.str() << endl;
 	file_list = get_all_files_names_within_folder(ss.str());
+//	cout << file_list.front() << endl;
+	
 	ss.str("");
 	ss.clear();
 
 	for (int i = 0; i < file_list.size(); i++)
 	{
 		ss << save_dir << file_list[i];
-		remove(ss.str().c_str());
+		cout << "remove " << ss.str().c_str() << endl;
+		//remove(ss.str().c_str());		//delete all files in save_dir!!!
 		ss.str("");
 		ss.clear();
 	}
@@ -69,23 +99,26 @@ int main()
 	file_list.clear();
 	ss.str("");
 	ss.clear();
-
+	
 
 
 
 	ss << negative_image_dir;
 
 	file_list = get_all_files_names_within_folder(ss.str());
-
+	cout << file_list.front() << endl;
 	ss.str("");
 	ss.clear();
+
 
 	for (int i = 0; i < file_list.size(); i++)
 	{
 		string file_name = file_list.at(i);
 		
-
 		ss << negative_image_dir << file_name;
+		cout << "imread " << ss.str().c_str() << endl;
+	
+
 
 		Mat image;
 		image = imread(ss.str());
@@ -129,7 +162,8 @@ int main()
 			Mat crop;
 			crop = image(Rect(rand_col.at(j), rand_row.at(j), patch_col, patch_row));
 
-			ss << save_dir << count << ".jpg";
+			ss << save_dir << "/" << count << ".jpg";
+			cout << "imwrite " << ss.str() << endl;
 			count++;
 
 			imwrite(ss.str(), crop);
