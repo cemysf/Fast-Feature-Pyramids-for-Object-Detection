@@ -10,7 +10,7 @@
 #include <math.h>
 #include <algorithm>
 #include <omp.h>
-
+#include <stdio.h>
 
 using namespace std;
 using namespace cv;
@@ -369,15 +369,15 @@ void save_tree_recursion(node* tree, FILE* fp)
 	if (tree->left_child == NULL && tree->right_child == NULL)
 	{
 		char save[1000];
-		sprintf_s(save, "%d %d %lf %lf %d %d %d %lf\n", 0, tree->depth, tree->distribution_pedestrian, tree->distribution_negative, tree->count_pedestrian, tree->count_negative, tree->index, tree->tau);
-		fprintf_s(fp, save);
+		sprintf(save, "%d %d %lf %lf %d %d %d %lf\n", 0, tree->depth, tree->distribution_pedestrian, tree->distribution_negative, tree->count_pedestrian, tree->count_negative, tree->index, tree->tau);
+		fprintf(fp, save);
 		return;
 	}
 	else
 	{
 		char save[1000];
-		sprintf_s(save, "%d %d %lf %lf %d %d %d %lf\n", 1, tree->depth, tree->distribution_pedestrian, tree->distribution_negative, tree->count_pedestrian, tree->count_negative, tree->index, tree->tau);
-		fprintf_s(fp, save);
+		sprintf(save, "%d %d %lf %lf %d %d %d %lf\n", 1, tree->depth, tree->distribution_pedestrian, tree->distribution_negative, tree->count_pedestrian, tree->count_negative, tree->index, tree->tau);
+		fprintf(fp, save);
 		save_tree_recursion(tree->left_child, fp);
 		save_tree_recursion(tree->right_child, fp);
 	}
@@ -389,8 +389,8 @@ void save_tree(node tree_head[], int NofTree)
 
 	for (int i = 0; i < NofTree; i++)
 	{
-		sprintf_s(filename, "save_bagging/%d.txt", i + 1);
-		fopen_s(&fp_save, filename, "w");
+		sprintf(filename, "save_bagging/%d.txt", i + 1);
+		fp_save = fopen(filename, "w"); //fopen(&fp_save, filename, "w");
 		save_tree_recursion(&tree_head[i], fp_save);
 		fclose(fp_save);
 	}
@@ -402,7 +402,7 @@ void load_tree_recursion(node* tree, FILE* fp)
 	int stop_criteria;
 	char load[1000];
 	fgets(load, sizeof(load), fp);
-	sscanf_s(load, "%d %d %lf %lf %d %d %d %lf\n", &stop_criteria, &(tree->depth), &(tree->distribution_pedestrian), &(tree->distribution_negative), &(tree->count_pedestrian), &(tree->count_negative), &(tree->index), &(tree->tau));
+	sscanf(load, "%d %d %lf %lf %d %d %d %lf\n", &stop_criteria, &(tree->depth), &(tree->distribution_pedestrian), &(tree->distribution_negative), &(tree->count_pedestrian), &(tree->count_negative), &(tree->index), &(tree->tau));
 	if (stop_criteria == 0)
 		return;
 	else
@@ -423,8 +423,8 @@ void load_tree(node* tree_head, int NofTree)
 
 	for (int index = 0; index < NofTree; index++)
 	{
-		sprintf_s(filename, "save_bagging/%d.txt", index + 1);
-		fopen_s(&fp_load, filename, "r");
+		sprintf(filename, "save_bagging/%d.txt", index + 1);
+		fp_load = fopen(filename, "r"); //fopen(&fp_load, filename, "r");
 		load_tree_recursion(tree_head + index, fp_load);
 		fclose(fp_load);
 	}
@@ -438,7 +438,7 @@ float*** get_hog(vector<float> descriptorValues, Size winSize, Size cellSize)
 
 
 	int gradientBinSize = 9;
-	// dividing 180¡Æ into 9 bins, how large (in rad) is one bin?
+	// dividing 180\A1\C6 into 9 bins, how large (in rad) is one bin?
 	float radRangeForOneBin = 3.14 / (float)gradientBinSize;
 
 	// prepare data structure: 9 orientation / gradient strenghts for each cell

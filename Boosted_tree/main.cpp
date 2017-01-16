@@ -1,7 +1,7 @@
 #include "BT_architecture.h"
 
 
-void main()
+int main()
 {
 
 	vector<node*> tree_head;
@@ -31,9 +31,9 @@ void main()
 	FILE* fp_pos;
 	char filename[100];
 
-	sprintf_s(filename, "pos_hog/%d.txt", i + 1);
+	sprintf(filename, "pos_hog/%d.txt", i + 1);
 
-	fopen_s(&fp_pos, filename, "r");
+	fp_pos = fopen(filename,"r");	//fopen_s(&fp_pos, filename, "r");
 
 
 	Mat sample_matrix(1, 15 * 7 * 9 * 4, CV_32FC1);
@@ -64,8 +64,8 @@ void main()
 	char filename[100];
 	int fileindex = rand() % (1218 * 5) + 1;
 
-	sprintf_s(filename, "neg_adaboost/%d.txt", i+1);
-	fopen_s(&fp_neg, filename, "r");
+	sprintf(filename, "neg_adaboost/%d.txt", i+1);
+	fp_neg=fopen(filename,"r");	//fopen_s(&fp_neg, filename, "r");
 
 
 	Mat sample_matrix(1, 15 * 7 * 9 * 4, CV_32FC1);
@@ -200,7 +200,7 @@ void main()
 	int x, y;
 	int width, height;
 	char filename[100];
-	sprintf_s(filename, "neg_original/%d.jpg", file_index);
+	sprintf(filename, "neg_original/%d.jpg", file_index);
 	Mat boot_image = imread(filename);
 	Mat gray;
 	cvtColor(boot_image, gray, CV_BGR2GRAY);
@@ -372,7 +372,7 @@ void main()
 		printf("%dth image is in testing...\n", i + 1);
 		char filename[100];
 
-		sprintf_s(filename, "test/%d.jpg", i + 1);
+		sprintf(filename, "test/%d.jpg", i + 1);
 
 		count_scale = 0;
 		Mat test_image;
@@ -415,8 +415,8 @@ void main()
 		//groundtruth parsing
 		FILE* fp_groundtruth;
 		char filename_groundtruth[100];
-		sprintf_s(filename_groundtruth, "groundtruth/%d.txt", i + 1);
-		fopen_s(&fp_groundtruth, filename_groundtruth, "r");
+		sprintf(filename_groundtruth, "groundtruth/%d.txt", i + 1);
+		fp_groundtruth = fopen(filename_groundtruth, "r");	 //fopen_s(&fp_groundtruth, filename_groundtruth, "r");
 
 		char cordinate[100];
 
@@ -438,14 +438,17 @@ void main()
 				while (*str != ' ' && *str != '\n')
 					str++;
 
+				string temp(begin);
+				temp += str;
+
 				if (tmp == 0)
-					x_min = atoi(string(begin, str).c_str());
+					x_min = atoi(temp.c_str());
 				if (tmp == 1)
-					y_min = atoi(string(begin, str).c_str());
+					y_min = atoi(temp.c_str());
 				if (tmp == 2)
-					x_max = atoi(string(begin, str).c_str());
+					x_max = atoi(temp.c_str());
 				if (tmp == 3)
-					y_max = atoi(string(begin, str).c_str());
+					y_max = atoi(temp.c_str());
 
 				str++;
 			}
@@ -788,7 +791,7 @@ void main()
 		}
 
 		char filename_result[100];
-		sprintf_s(filename_result, "result/%d.jpg", i + 1);
+		sprintf(filename_result, "result/%d.jpg", i + 1);
 
 		//draw bounding box and write image. RED is false positive, BLUE is true positive, GREEN is groundtruth
 		for (vector<struct bounding_box>::iterator it = bounding_box[0].begin(); it != bounding_box[0].end(); it++)
@@ -811,10 +814,11 @@ void main()
 	//cout << (double)training_time / CLOCKS_PER_SEC << "seconds for training" << endl << endl;
 
 	FILE* result;
-	fopen_s(&result, "result.txt", "w");
+	result = fopen("result.txt", "w");	//fopen_s(&result, "result.txt", "w");
 	for (int p = 0; p < 100; p++)
-		fprintf_s(result, "%lf %lf\n", (double)miss_pedestrian[p] / (double)count_pedestrian, (double)false_positive[p] / (double)288);
+		fprintf(result, "%lf %lf\n", (double)miss_pedestrian[p] / (double)count_pedestrian, (double)false_positive[p] / (double)288);
 
 	fclose(result);
 
+	return 0;
 }
